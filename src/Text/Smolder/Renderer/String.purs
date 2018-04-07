@@ -96,6 +96,7 @@ renderItem (Element name children attrs _ rest) =
            else "/>")
   in state \s → Tuple rest $ append s b
 renderItem (Content text rest) = state \s → Tuple rest $ append s $ escape escapeMap text
+renderItem (RawFragment text rest) = state \s → Tuple rest $ append s text
 renderItem (Empty rest) = pure rest
 
 -- | Render markup as an HTML string.

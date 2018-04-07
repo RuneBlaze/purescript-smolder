@@ -13,6 +13,7 @@ module Text.Smolder.Markup
   , with
   , attribute
   , (!)
+  , unsafeRawText
   , optionalWith
   , (!?)
   , EventHandlers(..)
@@ -44,6 +45,7 @@ instance functorEventHandler ∷ Functor EventHandler where
 data MarkupM e a
   = Element String (Markup e) (CatList Attr) (CatList (EventHandler e)) a
   | Content String a
+  | RawFragment String a
   | Empty a
 
 -- | The type of a sequence of markup nodes.
@@ -52,6 +54,7 @@ type Markup e = Free (MarkupM e) Unit
 instance bifunctorMarkupM :: Bifunctor MarkupM where
   bimap l r (Empty a) = Empty (r a)
   bimap l r (Content t a) = Content t (r a)
+  bimap l r (RawFragment t a) = RawFragment t (r a)
   bimap l r (Element el kids attrs events a) =
     Element el (mapEvent l kids) attrs (map l <$> events) (r a)
 
@@ -74,6 +77,9 @@ text s = liftF $ Content s unit
 -- | Used for empty nodes (without text or children)
 empty :: ∀ e. Markup e
 empty = liftF $ Empty unit
+
+unsafeRawText :: forall e. String -> Markup e
+unsafeRawText s = liftF $ RawFragment s unit
 
 data Attribute = Attribute (CatList Attr)
 
